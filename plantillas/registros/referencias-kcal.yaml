@@ -1,0 +1,41 @@
+# Referencias de kcal — memoria de estimaciones. Lo mantiene la skill `kcal`.
+#
+# Objetivo: CONSISTENCIA a nivel de INGREDIENTE, no de plato.
+#
+# REGLAS:
+# - Aquí SOLO van alimentos, productos de marca y raciones estándar. NUNCA platos
+#   completos: sus kcal se calculan siempre sumando componentes.
+# - Los productos de MARCA llevan siempre `fuente_dato` con el origen real (web oficial,
+#   ficha de supermercado, Open Food Facts) y la fecha de consulta. Nunca se inventan.
+# - `fibra_g` es opcional (misma base que kcal): añadirlo cuando el alimento aporte fibra
+#   de verdad; omitirlo en cárnicos, pescado, huevo, lácteos, aceites y azúcar.
+# - Editar libremente si una estimación resulta mala; los registros pasados NO se recalculan.
+#
+# Esquema:
+#   - clave: string única snake_case (ej. platano_100g)
+#     nombre: string
+#     tipo: alimento | racion        (racion = cuánto es "una ración" para esta persona)
+#     base: string                   ("100 g", "1 ud ~60 g", "1 lata escurrida")
+#     kcal: number
+#     proteina_g: number
+#     fibra_g: number                (opcional)
+#     confianza: alta | media | baja
+#     fuente_dato: string            (obligatorio en marcas)
+#     veces_usada: int
+#     fecha_alta: YYYY-MM-DD
+#     notas: string
+#
+# Ejemplo (al añadir la primera entrada, sustituir `[]` por la lista en bloque):
+# referencias:
+#   - clave: platano_100g
+#     nombre: "Plátano, pulpa sin piel"
+#     tipo: alimento
+#     base: "100 g"
+#     kcal: 89
+#     proteina_g: 1.1
+#     fibra_g: 2.6
+#     confianza: alta
+#     veces_usada: 1
+#     fecha_alta: 2026-01-15
+#     notas: "mediano ≈ 120 g de pulpa"
+referencias: []

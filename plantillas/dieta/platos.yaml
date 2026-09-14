@@ -1,0 +1,32 @@
+# Pool de platos. Una entrada por plato. Añadir al final. Lo mantiene la skill `platos`.
+# Esquema:
+#   - nombre: string (único)
+#     tipo_comida: [desayuno|comida|cena|snack|postre]
+#     cocina: string (española, italiana, asiática, mexicana, india, ...)
+#     ingredientes_clave: [string]
+#     tiempo_min: int
+#     dificultad: baja|media|alta
+#     estado: me_gusta|por_probar
+#     valoracion: 1-5 | null
+#     tags: [rapido, batch, tupper, ligero, alto_proteina, vegetariano, de_siempre, ...]
+#     notas: string
+#     origen: recuerdo|sugerido
+#     fecha_alta: YYYY-MM-DD
+#     ultima_vez: YYYY-MM-DD | null
+#
+# Ejemplo (al añadir la primera entrada, sustituir `[]` por la lista en bloque):
+# platos:
+#   - nombre: "Garbanzos con acelgas"
+#     tipo_comida: [comida, cena]
+#     cocina: española
+#     ingredientes_clave: [garbanzos, acelgas, ajo, pimentón]
+#     tiempo_min: 30
+#     dificultad: baja
+#     estado: por_probar
+#     valoracion: null
+#     tags: [legumbres, vegetariano, batch]
+#     notas: ""
+#     origen: sugerido
+#     fecha_alta: 2026-01-15
+#     ultima_vez: null
+platos: []

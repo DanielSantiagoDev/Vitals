@@ -1,0 +1,18 @@
+# Gustos por alimento. Una entrada por alimento. Lo mantiene la skill `alimentos`.
+# Esquema:
+#   - nombre: string (único, singular y minúsculas)
+#     categoria: carnes|pescados_mariscos|huevos_lacteos|legumbres|cereales_pan_pasta|verduras|frutas|frutos_secos_semillas|salsas_condimentos|snacks|bebidas|otros
+#     gusto: encanta|ok|no_gusta|por_probar
+#     motivo: string | null      (si no_gusta: textura, sabor, olor, alergia/intolerancia...)
+#     notas: string | null       (ej. "solo a la plancha", "no crudo")
+#     fecha: YYYY-MM-DD
+#
+# Ejemplo (al añadir la primera entrada, sustituir `[]` por la lista en bloque):
+# alimentos:
+#   - nombre: garbanzo
+#     categoria: legumbres
+#     gusto: encanta
+#     motivo: null
+#     notas: null
+#     fecha: 2026-01-15
+alimentos: []

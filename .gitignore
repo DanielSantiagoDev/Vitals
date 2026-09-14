@@ -1,0 +1,12 @@
+# ─── Datos personales: NUNCA se suben ───
+# Todo lo que describe a una persona concreta (perfil, analíticas, planes,
+# registros) vive bajo datos/. Se crea con la skill `inicio` a partir de plantillas/.
+datos/
+
+# ─── Local / sistema ───
+node_modules/
+*.local.*
+.DS_Store
+Thumbs.db
+desktop.ini
+.claude/settings.local.json

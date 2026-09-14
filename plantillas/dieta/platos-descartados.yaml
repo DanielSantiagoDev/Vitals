@@ -1,0 +1,6 @@
+# Platos rechazados. No volver a proponerlos.
+# Esquema:
+#   - nombre: string
+#     motivo: string | null   (ej. "no me gusta el hinojo", "demasiado laborioso")
+#     fecha: YYYY-MM-DD
+descartados: []

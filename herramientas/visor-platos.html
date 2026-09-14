@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visor de platos — Vitals</title>
+<style>
+  :root {
+    --bg: #f4f6f2;
+    --bg-card: #ffffff;
+    --text: #232821;
+    --text-muted: #676f64;
+    --border: #dde3d8;
+    --accent: #4f7a3a;
+    --accent-soft: #e4efdc;
+    --fiber: #3f7d5e;
+    --fiber-soft: #dbeee5;
+    --warn: #b0522c;
+    --warn-soft: #f7e5da;
+    --red: #ab433f;
+    --red-soft: #f7e1e0;
+    --blue: #3a6b8c;
+    --blue-soft: #dee9f1;
+    --amber: #99752a;
+    --amber-soft: #f4ecd6;
+    --shadow: 0 1px 3px rgba(30,40,25,0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #181b17;
+      --bg-card: #21251f;
+      --text: #e9eee6;
+      --text-muted: #9aa394;
+      --border: #333a30;
+      --accent: #8fc06f;
+      --accent-soft: #29331f;
+      --fiber: #6fc3a0;
+      --fiber-soft: #1e3129;
+      --warn: #e0906a;
+      --warn-soft: #362720;
+      --red: #d97e7a;
+      --red-soft: #352222;
+      --blue: #82b3d4;
+      --blue-soft: #1f2e39;
+      --amber: #d9b45f;
+      --amber-soft: #332c19;
+      --shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  header { margin-bottom: 18px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-muted); font-size: 13px; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0;
+    padding: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    align-items: center;
+  }
+  .search-box { flex: 1 1 220px; position: relative; }
+  .search-box input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+  }
+  .chip-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .chip-toggle.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .reset-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .reset-btn:hover { color: var(--red); border-color: var(--red); }
+  #refresh-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .count-line { color: var(--text-muted); font-size: 13px; margin: 0 0 14px; }
+  .count-line strong { color: var(--text); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; margin: 0; }
+  .card-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-estado-me_gusta { background: var(--accent-soft); color: var(--accent); }
+  .badge-estado-por_probar { background: var(--amber-soft); color: var(--amber); }
+  .badge-tipo { background: var(--blue-soft); color: var(--blue); }
+  .badge-dificultad { background: var(--fiber-soft); color: var(--fiber); }
+
+  .badge-estado-btn {
+    border: none;
+    cursor: pointer;
+    font: inherit;
+  }
+  .badge-estado-btn:hover { filter: brightness(1.08); }
+  .badge-estado-btn:disabled { cursor: wait; opacity: 0.6; }
+
+  .ingredientes { font-size: 12.5px; color: var(--text); }
+  .ingredientes .label { color: var(--text-muted); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px 4px 2px 7px;
+    border-radius: 6px;
+  }
+  .tag-remove {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 4px 5px;
+    margin: -4px -3px -4px 0;
+  }
+  .tag-remove:hover { color: var(--red); }
+  .tag-add {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .tag-add:hover { color: var(--accent); border-color: var(--accent); }
+  .tag-add-input {
+    width: 90px;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .notas {
+    font-size: 12.5px;
+    color: var(--warn);
+    background: var(--warn-soft);
+    padding: 6px 9px;
+    border-radius: 7px;
+  }
+
+  .card-footer {
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 7px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .empty-state, .error-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .error-state { color: var(--red); }
+  .error-state code {
+    background: var(--red-soft);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+
+  footer { margin-top: 30px; color: var(--text-muted); font-size: 11.5px; text-align: center; }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+  .toast.error { background: var(--red); }
+  .toast.visible { opacity: 1; }
+
+  @media (max-width: 520px) {
+    .toolbar { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🍽️ Visor de platos</h1>
+    <div class="subtitle" id="subtitle">Cargando datos/dieta/platos.yaml…</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Buscar por nombre o ingrediente…" autocomplete="off">
+    </div>
+    <select id="filtro-tipo"></select>
+    <select id="filtro-cocina"></select>
+    <select id="filtro-estado"></select>
+    <div id="chips-tags" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    <button class="reset-btn" id="reset">Limpiar filtros</button>
+    <button id="refresh-btn" title="Vuelve a leer platos.yaml">↻ Releer YAML</button>
+  </div>
+
+  <p class="count-line" id="count-line" hidden></p>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="empty" hidden>Ningún plato coincide con los filtros.</div>
+  <div class="error-state" id="error" hidden></div>
+
+  <footer id="footer"></footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Parser YAML mínimo, a medida del esquema fijo de platos.yaml ----------
+// No es un parser YAML genérico: asume el formato exacto en que /platos escribe
+// (lista de objetos plano, sin anidación más allá de listas [a, b] y escalares).
+function parsePlatosYaml(raw) {
+  const lines = raw.split(/\r?\n/);
+  const platos = [];
+  let current = null;
+
+  function parseScalar(v) {
+    v = v.trim();
+    if (v === 'null' || v === '') return null;
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+    if (/^-?\d+$/.test(v)) return parseInt(v, 10);
+    if (v.startsWith('"') && v.endsWith('"')) return v.slice(1, -1);
+    if (v.startsWith('[') && v.endsWith(']')) {
+      const inner = v.slice(1, -1).trim();
+      if (inner === '') return [];
+      return inner.split(',').map(s => {
+        s = s.trim();
+        if (s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1);
+        return s;
+      });
+    }
+    return v;
+  }
+
+  for (const line of lines) {
+    if (/^\s*#/.test(line) || line.trim() === '' || /^platos:\s*$/.test(line)) continue;
+    const itemMatch = line.match(/^\s*-\s+(\w+):\s*(.*)$/);
+    if (itemMatch) {
+      if (current) platos.push(current);
+      current = {};
+      current[itemMatch[1]] = parseScalar(itemMatch[2]);
+      continue;
+    }
+    const fieldMatch = line.match(/^\s+(\w+):\s*(.*)$/);
+    if (fieldMatch && current) {
+      current[fieldMatch[1]] = parseScalar(fieldMatch[2]);
+    }
+  }
+  if (current) platos.push(current);
+  return platos;
+}
+
+// ---------- Estado y render ----------
+const ESTADO_LABEL = { me_gusta: "Me gusta", por_probar: "Por probar" };
+const TIPO_ORDER = ["desayuno", "comida", "cena", "snack", "postre"];
+
+let PLATOS = [];
+let filtroTexto = "";
+let filtroTipo = "";
+let filtroCocina = "";
+let filtroEstado = "";
+let tagsActivos = new Set();
+
+async function cargarPlatos() {
+  const subtitle = document.getElementById("subtitle");
+  const errorBox = document.getElementById("error");
+  errorBox.hidden = true;
+  subtitle.textContent = "Cargando datos/dieta/platos.yaml…";
+  try {
+    const resp = await fetch('./platos.yaml?_=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const raw = await resp.text();
+    PLATOS = parsePlatosYaml(raw);
+    if (PLATOS.length === 0) throw new Error('El YAML se leyó pero no se encontraron platos (¿formato cambiado?)');
+    subtitle.textContent = `${PLATOS.length} platos registrados en datos/dieta/platos.yaml · leído ${new Date().toLocaleTimeString('es-ES')}`;
+    poblarFiltros();
+    render();
+  } catch (e) {
+    subtitle.textContent = "No se pudo cargar platos.yaml";
+    errorBox.hidden = false;
+    errorBox.innerHTML = `
+      <p><strong>No se ha podido leer <code>platos.yaml</code>.</strong></p>
+      <p>Este visor necesita abrirse desde un servidor local (no con doble clic al .html),
+      porque el navegador bloquea leer archivos locales sueltos por seguridad.</p>
+      <p>Ejecuta <code>node herramientas/servir-visor-platos.js</code> desde la raíz del proyecto (abre el navegador solo).</p>
+      <p style="font-size:11px">Detalle técnico: ${e.message}</p>
+    `;
+    document.getElementById("grid").innerHTML = "";
+    document.getElementById("count-line").hidden = true;
+  }
+}
+
+function poblarSelect(select, valores, placeholder) {
+  const valorPrevio = select.value;
+  select.innerHTML = "";
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = placeholder;
+  select.appendChild(optAll);
+  valores.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+    select.appendChild(opt);
+  });
+  if (valores.includes(valorPrevio)) select.value = valorPrevio;
+}
+
+function poblarFiltros() {
+  const tipos = [...new Set(PLATOS.flatMap(p => p.tipo_comida || []))]
+    .sort((a, b) => TIPO_ORDER.indexOf(a) - TIPO_ORDER.indexOf(b));
+  const cocinas = [...new Set(PLATOS.map(p => p.cocina).filter(Boolean))].sort();
+  const estados = [...new Set(PLATOS.map(p => p.estado).filter(Boolean))];
+
+  poblarSelect(document.getElementById("filtro-tipo"), tipos, "Todo tipo de comida");
+  poblarSelect(document.getElementById("filtro-cocina"), cocinas, "Toda cocina");
+
+  const selEstado = document.getElementById("filtro-estado");
+  const valorPrevio = selEstado.value;
+  selEstado.innerHTML = '<option value="">Cualquier estado</option>';
+  estados.forEach(e => {
+    const opt = document.createElement("option");
+    opt.value = e;
+    opt.textContent = ESTADO_LABEL[e] || e;
+    selEstado.appendChild(opt);
+  });
+  if (estados.includes(valorPrevio)) selEstado.value = valorPrevio;
+
+  const tagCount = {};
+  PLATOS.forEach(p => (p.tags || []).forEach(t => tagCount[t] = (tagCount[t] || 0) + 1));
+  const topTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t]) => t);
+
+  const chipsWrap = document.getElementById("chips-tags");
+  chipsWrap.innerHTML = "";
+  topTags.forEach(tag => {
+    const chip = document.createElement("div");
+    chip.className = "chip-toggle" + (tagsActivos.has(tag) ? " active" : "");
+    chip.textContent = tag;
+    chip.addEventListener("click", () => {
+      if (tagsActivos.has(tag)) { tagsActivos.delete(tag); chip.classList.remove("active"); }
+      else { tagsActivos.add(tag); chip.classList.add("active"); }
+      render();
+    });
+    chipsWrap.appendChild(chip);
+  });
+}
+
+// ---------- Guardado (API del servidor -> platos.yaml) ----------
+let toastTimer = null;
+function showToast(msg, isError) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.className = "toast visible" + (isError ? " error" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), isError ? 3500 : 1600);
+}
+
+async function apiPost(url, body) {
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || ("HTTP " + resp.status));
+  return data;
+}
+
+async function cambiarEstado(p) {
+  const nuevoEstado = p.estado === "me_gusta" ? "por_probar" : "me_gusta";
+  const anterior = p.estado;
+  p.estado = nuevoEstado; // optimista
+  render();
+  try {
+    await apiPost("/api/estado", { nombre: p.nombre, estado: nuevoEstado });
+    showToast(`«${p.nombre}» → ${ESTADO_LABEL[nuevoEstado]}`);
+  } catch (e) {
+    p.estado = anterior; // revertir
+    render();
+    showToast("No se pudo guardar: " + e.message, true);
+  }
+}
+
+async function guardarTags(p, nuevosTags) {
+  const anteriores = p.tags;
+  p.tags = nuevosTags; // optimista
+  render();
+  try {
+    const data = await apiPost("/api/tags", { nombre: p.nombre, tags: nuevosTags });
+    p.tags = data.tags; // normalizado por el servidor
+    render();
+  } catch (e) {
+    p.tags = anteriores; // revertir
+    render();
+    showToast("No se pudo guardar el tag: " + e.message, true);
+  }
+}
+
+function quitarTag(p, tag) {
+  guardarTags(p, (p.tags || []).filter(t => t !== tag));
+}
+
+function anadirTag(p, tag) {
+  const limpio = tag.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!limpio) return;
+  if ((p.tags || []).includes(limpio)) return;
+  guardarTags(p, [...(p.tags || []), limpio]);
+}
+
+function matchPlato(p) {
+  if (filtroTipo && !(p.tipo_comida || []).includes(filtroTipo)) return false;
+  if (filtroCocina && p.cocina !== filtroCocina) return false;
+  if (filtroEstado && p.estado !== filtroEstado) return false;
+  if (tagsActivos.size > 0) {
+    const tags = new Set(p.tags || []);
+    for (const t of tagsActivos) if (!tags.has(t)) return false;
+  }
+  if (filtroTexto) {
+    const haystack = [p.nombre || "", ...(p.ingredientes_clave || []), p.cocina || "", ...(p.tags || [])]
+      .join(" ").toLowerCase();
+    if (!haystack.includes(filtroTexto)) return false;
+  }
+  return true;
+}
+
+function render() {
+  const filtrados = PLATOS.filter(matchPlato).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+  const countLine = document.getElementById("count-line");
+  countLine.hidden = false;
+  countLine.innerHTML = `Mostrando <strong>${filtrados.length}</strong> de ${PLATOS.length} platos`;
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  document.getElementById("empty").hidden = filtrados.length !== 0;
+
+  filtrados.forEach(p => grid.appendChild(renderCard(p)));
+}
+
+function renderCard(p) {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const title = document.createElement("h3");
+  title.className = "card-title";
+  title.textContent = p.nombre;
+  card.appendChild(title);
+
+  const meta = document.createElement("div");
+  meta.className = "card-meta";
+
+  const estadoBtn = document.createElement("button");
+  estadoBtn.className = `badge badge-estado-${p.estado} badge-estado-btn`;
+  estadoBtn.textContent = ESTADO_LABEL[p.estado] || p.estado;
+  estadoBtn.title = "Clic para cambiar a " + (p.estado === "me_gusta" ? ESTADO_LABEL.por_probar : ESTADO_LABEL.me_gusta);
+  estadoBtn.addEventListener("click", () => {
+    estadoBtn.disabled = true;
+    cambiarEstado(p);
+  });
+  meta.appendChild(estadoBtn);
+
+  meta.insertAdjacentHTML("beforeend", `
+    ${(p.tipo_comida || []).map(t => `<span class="badge badge-tipo">${t}</span>`).join("")}
+    <span class="badge badge-dificultad">${p.dificultad}</span>
+    <span>· ${p.tiempo_min} min</span>
+    ${p.cocina ? `<span>· ${p.cocina}</span>` : ""}
+  `);
+  card.appendChild(meta);
+
+  if (p.ingredientes_clave && p.ingredientes_clave.length) {
+    const ing = document.createElement("div");
+    ing.className = "ingredientes";
+    ing.innerHTML = `<span class="label">Ingredientes: </span>${p.ingredientes_clave.join(", ")}`;
+    card.appendChild(ing);
+  }
+
+  const tagsWrap = document.createElement("div");
+  tagsWrap.className = "tags";
+  (p.tags || []).forEach(t => {
+    const tagEl = document.createElement("span");
+    tagEl.className = "tag";
+    tagEl.textContent = t;
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "tag-remove";
+    removeBtn.textContent = "×";
+    removeBtn.title = "Quitar tag";
+    removeBtn.addEventListener("click", () => quitarTag(p, t));
+    tagEl.appendChild(removeBtn);
+    tagsWrap.appendChild(tagEl);
+  });
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "tag-add";
+  addBtn.textContent = "+ tag";
+  addBtn.addEventListener("click", () => {
+    const input = document.createElement("input");
+    input.className = "tag-add-input";
+    input.placeholder = "nuevo_tag";
+    tagsWrap.replaceChild(input, addBtn);
+    input.focus();
+    const confirmar = () => {
+      const valor = input.value;
+      if (tagsWrap.contains(input)) tagsWrap.replaceChild(addBtn, input);
+      if (valor.trim()) anadirTag(p, valor);
+    };
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") confirmar();
+      if (e.key === "Escape") { if (tagsWrap.contains(input)) tagsWrap.replaceChild(addBtn, input); }
+    });
+    input.addEventListener("blur", confirmar);
+  });
+  tagsWrap.appendChild(addBtn);
+  card.appendChild(tagsWrap);
+
+  if (p.notas) {
+    const notas = document.createElement("div");
+    notas.className = "notas";
+    notas.textContent = p.notas;
+    card.appendChild(notas);
+  }
+
+  const footer = document.createElement("div");
+  footer.className = "card-footer";
+  footer.innerHTML = `
+    <span>${p.origen === "recuerdo" ? "Recuerdo" : "Sugerido"} · alta ${p.fecha_alta}</span>
+    <span>${p.valoracion ? "★".repeat(p.valoracion) : ""}</span>
+  `;
+  card.appendChild(footer);
+
+  return card;
+}
+
+document.getElementById("search").addEventListener("input", e => { filtroTexto = e.target.value.trim().toLowerCase(); render(); });
+document.getElementById("filtro-tipo").addEventListener("change", e => { filtroTipo = e.target.value; render(); });
+document.getElementById("filtro-cocina").addEventListener("change", e => { filtroCocina = e.target.value; render(); });
+document.getElementById("filtro-estado").addEventListener("change", e => { filtroEstado = e.target.value; render(); });
+document.getElementById("reset").addEventListener("click", () => {
+  filtroTexto = ""; filtroTipo = ""; filtroCocina = ""; filtroEstado = "";
+  tagsActivos.clear();
+  document.getElementById("search").value = "";
+  document.getElementById("filtro-tipo").value = "";
+  document.getElementById("filtro-cocina").value = "";
+  document.getElementById("filtro-estado").value = "";
+  poblarFiltros();
+  render();
+});
+document.getElementById("refresh-btn").addEventListener("click", cargarPlatos);
+
+document.getElementById("footer").textContent =
+  "Fuente: datos/dieta/platos.yaml, leído en vivo. Clic en el estado o en los tags para editarlos (se guardan al momento). «↻ Releer YAML» si lo editaste desde fuera.";
+
+cargarPlatos();
+</script>
+</body>
+</html>
